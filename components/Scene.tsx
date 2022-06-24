@@ -1,8 +1,9 @@
 import { memo, useCallback } from 'react';
 import { GestureResponderEvent } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
-import { GameStateItem } from '../App';
-import { Position, useGridCalculation } from '../utilities/useGridCalculation';
+import { GameStateItem } from '../utilities/useGameLogic/types';
+import { useGridCalculation } from '../utilities/useGridCalculation';
+import { Position } from '../utilities/useGridCalculation/types';
 import { SceneBorders } from './SceneBorder';
 import { SceneItems } from './SceneItems';
 
@@ -17,7 +18,7 @@ type SceneProps = {
 export const Scene = memo<SceneProps>(
   ({ sceneSize, gridSize, borderSize = 1, state, onSelect }) => {
     const { bordersStartPosition, itemSize, getPosition, getLocation } =
-      useGridCalculation(gridSize, borderSize, sceneSize);
+      useGridCalculation({ size: gridSize, borderSize, space: sceneSize });
 
     const onTouchEndCapture = useCallback(
       ({ nativeEvent: { locationX, locationY } }: GestureResponderEvent) => {

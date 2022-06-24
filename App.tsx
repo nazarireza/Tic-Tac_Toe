@@ -1,29 +1,29 @@
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, Text, View, Alert } from 'react-native';
+import { GameResult, GameResultBlock } from './components/GameResultBlock';
 import { Scene } from './components/Scene';
-import { Position } from './utilities/useGridCalculation';
+import { useGameLogic } from './utilities/useGameLogic';
 
-export type Player = 'X' | 'O';
-
-export type GameStateItem = {
-  player: Player;
-  move: Position;
-};
+const GRID_SIZE = 3;
 
 export default function App() {
-  const [turn, setTurn] = useState<Player>('O');
-  const [state, setState] = useState<GameStateItem[]>([]);
+  const [gameState, setGameState] = useState<GameResult>({
+    O: 0,
+    X: 0,
+  });
 
-  const onMove = useCallback(
-    (position: Position) => {
-      setState((prev) => [...prev, { player: turn, move: position }]);
+  const { turn, state, move } = useGameLogic({
+    size: GRID_SIZE,
+    onFinish: ({ winner, reset }) => {
+      if (winner)
+        setGameState((prev) => ({ ...prev, [winner]: prev[winner] + 1 }));
 
-      const player = turn === 'O' ? 'X' : 'O';
-      setTurn(player);
+      Alert.alert(winner ? `Winner is ${winner}!` : 'Game Over!', undefined, [
+        { text: 'Restart Game', onPress: reset },
+      ]);
     },
-    [turn]
-  );
+  });
 
   return (
     <View style={styles.container}>
@@ -33,11 +33,12 @@ export default function App() {
       </Text>
       <Scene
         sceneSize={350}
-        gridSize={3}
+        gridSize={GRID_SIZE}
         borderSize={3}
         state={state}
-        onSelect={onMove}
+        onSelect={move}
       />
+      <GameResultBlock {...gameState} />
     </View>
   );
 }

@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { GameStateItem } from '../App';
-import { GetLocation } from '../utilities/useGridCalculation';
+import { GameStateItem } from '../utilities/useGameLogic/types';
+import { GetLocation } from '../utilities/useGridCalculation/types';
 import { Symbol } from './Symbol';
 
 type SceneItemsProps = {

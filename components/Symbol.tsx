@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import { Path, PathProps } from 'react-native-svg';
-import { Player } from '../App';
+import { Player } from '../utilities/useGameLogic/types';
 
 const INITIAL_PATH_SIZE = 24;
 
