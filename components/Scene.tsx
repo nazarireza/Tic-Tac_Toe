@@ -1,51 +1,58 @@
 import { memo, useCallback } from 'react';
-import { GestureResponderEvent, StyleSheet, View } from 'react-native';
+import { GestureResponderEvent } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
-import { GRID_BORDER_SIZE } from '../assets/constants';
-import { useGridCalculation } from '../utilities/useGridCalculation';
-import { OSymbol } from './OSymbol';
+import { GameStateItem } from '../App';
+import { Position, useGridCalculation } from '../utilities/useGridCalculation';
 import { SceneBorders } from './SceneBorder';
-import { XSymbol } from './XSymbol';
+import { SceneItems } from './SceneItems';
 
 type SceneProps = {
   sceneSize: number;
   gridSize: number;
-  onSelect?: ({ row, column }: { row: number; column: number }) => void;
+  borderSize?: number;
+  state: GameStateItem[];
+  onSelect?: (position: Position) => void;
 };
 
-export const Scene = memo<SceneProps>(({ sceneSize, gridSize, onSelect }) => {
-  const { bordersStartPosition, itemSize, getRowAndColumn } =
-    useGridCalculation(gridSize, GRID_BORDER_SIZE, sceneSize);
+export const Scene = memo<SceneProps>(
+  ({ sceneSize, gridSize, borderSize = 1, state, onSelect }) => {
+    const { bordersStartPosition, itemSize, getPosition, getLocation } =
+      useGridCalculation(gridSize, borderSize, sceneSize);
 
-  const onTouchEndCapture = useCallback(
-    ({ nativeEvent: { locationX, locationY } }: GestureResponderEvent) => {
-      const { row, column, isOnBorder } = getRowAndColumn(locationX, locationY);
-      !isOnBorder && onSelect?.({ row, column });
-    },
-    [getRowAndColumn, onSelect]
-  );
+    const onTouchEndCapture = useCallback(
+      ({ nativeEvent: { locationX, locationY } }: GestureResponderEvent) => {
+        const { position, isOnBorder } = getPosition({
+          x: locationX,
+          y: locationY,
+        });
 
-  return (
-    <View style={styles.container}>
+        const selectable = !state.some(
+          ({ move }) =>
+            move.row === position.row && move.column === position.column
+        );
+
+        if (!isOnBorder && selectable) onSelect?.(position);
+      },
+      [getPosition, onSelect, state]
+    );
+
+    return (
       <Svg
         height={sceneSize}
         width={sceneSize}
         onTouchEndCapture={onTouchEndCapture}
       >
         <Rect width="100%" height="100%" fill="coral" />
-        <SceneBorders bordersStartPosition={bordersStartPosition} />
-        <XSymbol itemSize={itemSize} />
-        <OSymbol itemSize={itemSize} x={itemSize + GRID_BORDER_SIZE} />
+        <SceneBorders
+          size={borderSize}
+          bordersStartPosition={bordersStartPosition}
+        />
+        <SceneItems
+          locationCalculator={getLocation}
+          state={state}
+          itemSize={itemSize}
+        />
       </Svg>
-    </View>
-  );
-});
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+    );
+  }
+);
